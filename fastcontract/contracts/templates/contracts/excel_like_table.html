@@ -1,0 +1,56 @@
+{% extends "contracts/base.html" %}
+
+{% block title %}Excel-like Table{% endblock %}
+
+{% block content %}
+<div id="handsontable-container" class="mt-3"></div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@8.4.0/dist/handsontable.full.min.css">
+<style>
+    .ht_clone_left .htCore th {
+        text-align: left !important; /* Align row headers to the left */
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/handsontable@8.4.0/dist/handsontable.full.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('handsontable-container');
+        const data = Handsontable.helper.createSpreadsheetData(10, 4);
+        const hot = new Handsontable(container, {
+            data: data,
+            rowHeaders: true,
+            colHeaders: ['Column 1', 'Column 2', 'Column 3', 'Column 4'],
+            contextMenu: true,
+            manualRowResize: true,
+            manualColumnResize: true,
+            stretchH: 'all',
+            licenseKey: 'non-commercial-and-evaluation',
+            cells: function (row, col) {
+                const cellProperties = {};
+                cellProperties.className = 'htRight'; // Right-align content
+                return cellProperties;
+            },
+            afterChange: function(changes, source) {
+                if (source === 'loadData') {
+                    return; // Don't proceed if the data was loaded
+                }
+                const maxCols = Math.max(...hot.getData().map(row => row.length));
+                hot.updateSettings({
+                    colHeaders: Array.from({ length: maxCols }, (_, i) => `Column ${i + 1}`)
+                });
+            }
+        });
+
+        // Adjust row header width after Handsontable is rendered
+        hot.addHook('afterRender', function() {
+            const rowHeaderCells = container.querySelectorAll('.ht_clone_left .htCore th');
+            rowHeaderCells.forEach(cell => {
+                cell.style.whiteSpace = 'nowrap';
+                cell.style.overflow = 'hidden';
+                cell.style.textOverflow = 'ellipsis';
+                cell.style.maxWidth = 'none';
+                cell.style.width = 'auto'; // Ensure the width is auto-adjusted
+            });
+        });
+    });
+</script>
+{% endblock %}

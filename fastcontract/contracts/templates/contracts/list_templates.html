@@ -1,0 +1,111 @@
+{% extends "contracts/base.html" %}
+
+{% block title %}Templates{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@8.4.0/dist/handsontable.full.min.css">
+<style>
+    .template-box {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .template-box h5 {
+        margin-top: 0;
+    }
+    .ht_clone_left .htCore th {
+        text-align: left !important; /* Align row headers to the left */
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/handsontable@8.4.0/dist/handsontable.full.min.js"></script>
+
+<div class="container">
+    <div class="template-box">
+        <h5>Upload Template</h5>
+        <form method="post" enctype="multipart/form-data" class="form-group">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+    </div>
+    {% for template in templates %}
+    <div class="template-box">
+        <h5><a href="{% url 'download_template' template.id %}">{{ template.name }}</a></h5>
+        <h4><button id="create-instance-{{ template.id }}" class="btn btn-primary mt-3">Create Contracts</button></h4>
+        <div id="handsontable-{{ template.id }}" class="handsontable-container"></div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const container = document.getElementById('handsontable-{{ template.id }}');
+                const data = {{ template.variables|safe }};
+                const hot = new Handsontable(container, {
+                    data: data.map(variable => ['','','']),
+                    colHeaders: ['Contract 1', 'Contract 2', 'Contract 3... ->'],
+                    rowHeaders: data,
+                    contextMenu: true,
+                    manualRowResize: true,
+                    manualColumnResize: true,
+                    stretchH: 'all',
+                    autoRowSize: true,  // Automatically adjust row height
+                    autoColumnSize: true,  // Automatically adjust column width
+                    licenseKey: 'non-commercial-and-evaluation',
+                    cells: function (row, col) {
+                        const cellProperties = {};
+                        cellProperties.className = 'htRight'; // Right-align content
+                        return cellProperties;
+                    },
+                    afterChange: function(changes, source) {
+                        if (source === 'loadData') {
+                            return; // Don't proceed if the data was loaded
+                        }
+                        const maxCols = Math.max(...hot.getData().map(row => row.length));
+                        hot.updateSettings({
+                            colHeaders: Array.from({ length: maxCols }, (_, i) => `Instance ${i + 1}`)
+                        });
+                    }
+                });
+
+                // Adjust row header width after Handsontable is rendered
+                hot.addHook('afterRender', function() {
+                    const rowHeaderCells = container.querySelectorAll('.ht_clone_left .htCore th');
+                    rowHeaderCells.forEach(cell => {
+                        cell.style.whiteSpace = 'nowrap';
+                        cell.style.overflow = 'hidden';
+                        cell.style.textOverflow = 'ellipsis';
+                        cell.style.maxWidth = 'none';
+                        cell.style.width = 'auto'; // Ensure the width is auto-adjusted
+                    });
+                });
+
+                document.getElementById('create-instance-{{ template.id }}').addEventListener('click', function() {
+                    const variables = data;
+                    const instances = [];
+                    const numCols = hot.countCols();
+                    for (let col = 0; col < numCols; col++) {
+                        const values = hot.getDataAtCol(col);
+                        if (values.some(value => value !== '')) {
+                            instances.push({ variables, values });
+                        }
+                    }
+                    fetch("{% url 'create_contract_instance' template.id %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ instances })
+                    }).then(response => response.json()).then(data => {
+                        if (data.success) {
+                            alert('Contract instances created successfully.');
+                        } else {
+                            alert('Failed to create contract instances.');
+                        }
+                    });
+                });
+            });
+        </script>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

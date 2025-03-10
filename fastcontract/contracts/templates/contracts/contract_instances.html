@@ -1,0 +1,40 @@
+{% extends "contracts/base.html" %}
+
+{% block title %}Contract Instances{% endblock %}
+
+{% block content %}
+<table class="table table-striped table-bordered">
+    <thead class="thead-dark">
+        <tr>
+            <th>Template</th>
+            <th>Variables</th>
+            <th>Values</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for instance in contract_instances %}
+        <tr>
+            <td>{{ instance.template_name }}</td>
+            <td>
+                <ul class="list-unstyled">
+                    {% for variable in instance.variables %}
+                    <li>{{ variable }}</li>
+                    {% endfor %}
+                </ul>
+            </td>
+            <td>
+                <ul class="list-unstyled">
+                    {% for value in instance.values %}
+                    <li>{{ value }}</li>
+                    {% endfor %}
+                </ul>
+            </td>
+            <td>
+                <a href="{% url 'download_contract_instance' instance.id %}" class="btn btn-primary">Download</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "contracts/base.html" %}
+
+{% block title %}Create Contract Instance{% endblock %}
+
+{% block content %}
+{% if feedback %}
+<div class="alert alert-success" role="alert">
+    {{ feedback }}
+</div>
+{% endif %}
+<form method="post" class="form-group">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>
+{% endblock %}
+
+
