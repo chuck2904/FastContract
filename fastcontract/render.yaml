@@ -3,8 +3,8 @@ services:
     name: fastcontract
     env: python
     plan: free
-    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate"
-    startCommand: "gunicorn fastcontract.wsgi:application"
+    buildCommand: "cd fastcontract && pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate"
+    startCommand: "cd fastcontract && gunicorn fastcontract.wsgi:application"
     envVars:
       - key: SECRET_KEY
         value: your-secret-key
