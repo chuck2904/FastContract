@@ -1,0 +1,8 @@
+# filepath: h:\Code\2025.03 FastContract\.dockerignore
+__pycache__
+*.pyc
+*.pyo
+.env
+.venv
+.git
+.gitignore
