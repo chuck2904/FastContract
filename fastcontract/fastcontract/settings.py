@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-ss32(uf8n1&f$x%m55e)v83x2%gz6_*0_^98idy$36@h+5wu2_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1']
+ALLOWED_HOSTS = ['localhost','127.0.0.1','fastcontract-2.onrender.com']
 
 
 # Application definition
